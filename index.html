@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<title>SocketChat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #141414;
+            color: yellow;
+        }
+        span {
+            font-size: 22px;
+            padding-left: 10px;
+        }
+        #message_form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+	<div class="messages">
+	</div>
+     
+    <form id="login_form" action="">
+      <h2>Вход:</h2>
+      <input placeholder="name" id="name" autocomplete="off" /><button>Send</button>
+    </form> 
+
+	<form id="message_form" action="">
+      <input placeholder="message..." id="send" autocomplete="off" /><button>Send</button>
+    </form>
+
+	<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+	<script
+	src="https://code.jquery.com/jquery-3.4.1.js"
+	integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+	crossorigin="anonymous"></script>
+	<script>
+		$(document).ready(function() {
+            $('#login_form').submit(function() {
+                var name = $('#name').val();
+                $('#login_form').hide();
+                $('#message_form').show();
+                chat(name);
+                return false;
+            });
+
+            function chat(name) {
+                var socket = io();
+                // use your socket
+              $('#message_form').submit(function() {
+                var text = $('#send').val();
+                var now = new Date(Date.now());
+                var time = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+                var data = {
+                    "name": name,
+                    "text": text,
+                    "time": time
+                };
+                socket.emit('send message', data);
+                $('#send').val('');
+                return false;
+            });
+
+            socket.on("welcome", (msg) => {
+                console.log(msg);
+                $('.messages').append(msg.welcome);
+            });
+
+            socket.on("send message", (msg) => {
+                console.log(msg);
+                var html_message = 
+                '<div>' +
+                '<span><b>'+msg.name+'</b></span>' +
+                '<span>'+msg.text+'</span>' +
+                '<span><b>'+msg.time+'</b></span>' +
+                '</div>';
+                $('.messages').append(html_message);
+            });
+            }
+		});
+        </script>
+    </body>
+    </html>
